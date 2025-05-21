@@ -10,6 +10,7 @@ namespace GraphicsLib
     public class Renderer
     {
         public Scene Scene { get; set; }
+        public bool shadowsEnabled { get; set; }
         public WriteableBitmap? Bitmap { get; set; }
         private Vector4[] projectionSpaceBuffer;
         private int bufferLength;
@@ -139,7 +140,8 @@ namespace GraphicsLib
                 scene = renderer.Scene;
                 shader = new Shader()
                 {
-                    Scene = scene
+                    Scene = scene,
+                    ShadowsEnabled = renderer.shadowsEnabled
                 };
                 cameraTransform = scene.Camera.ViewMatrix;
                 projectionTransform = scene.Camera.ProjectionMatrix;

@@ -12,7 +12,12 @@ namespace GraphicsLib.Shaders
     {
         // Свойство для доступа к сцене, с установкой параметров
         public Scene Scene { get => scene; set => SetSceneParams(value); }
+        public bool ShadowsEnabled { get => shadowsEnabled; set => SetShadowsEnabled(value); }
 
+        private void SetShadowsEnabled(bool value)
+        {
+            shadowsEnabled = value;
+        }
         // Цвет окружающего света (кэшируется для оптимизации)
         private Vector3 ambientLightColor;
         // Степень зеркального отражения (кэшируется)
@@ -23,6 +28,7 @@ namespace GraphicsLib.Shaders
         private float lightIntensity;
         // Позиция источника света
         private Vector3 lightPosition;
+        private bool shadowsEnabled;
         // Метод для проверки пересечения луча с треугольником с использованием алгоритма Мёллера-Трумбора.
         // Параметры:
         // - origin: Начальная точка луча (Vector3).
@@ -117,6 +123,7 @@ namespace GraphicsLib.Shaders
         }
         private bool IsInShadow(Vector3 point, Vector3 lightPos, Obj obj, int currentTriangleIndex = -1)
         {
+            if (!shadowsEnabled) return false;
             float distanceToLight = Vector3.Distance(point, lightPos);
 
             for (int i = 0; i < obj.triangles.Length; i++)
@@ -152,6 +159,7 @@ namespace GraphicsLib.Shaders
             lightIntensity = scene.LightIntensity;
             // Кэшируем позицию света
             lightPosition = scene.LightPosition;
+            shadowsEnabled = false; // Default, updated via MainWindow
         }
 
         // Матрица трансформации объекта в мировых координатах

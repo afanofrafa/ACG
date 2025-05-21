@@ -12,7 +12,7 @@
     <Window.Resources>
         <system:String x:Key="openString">Открыть файл...</system:String>
         <system:String x:Key="fileString">Путь и имя файла:</system:String>
-        <system:String x:Key="FlatCountString">Количество полигонов::</system:String>
+        <system:String x:Key="FlatCountString">Количество полигонов:</system:String>
         <system:String x:Key="debugString">FPS:</system:String>
         <system:String x:Key="mode_move">Двигать</system:String>
         <system:String x:Key="mode_rotate">Поворачивать</system:String>
@@ -34,7 +34,7 @@
 
             <!-- Верхняя панель -->
             <StackPanel Grid.Row="0" Margin="0,20,0,0">
-                <Button Width="200" Height="30" HorizontalAlignment="Center"  Click="ButtonOpenFile_Click" Content="{StaticResource openString}" />
+                <Button Width="200" Height="30" HorizontalAlignment="Center" Click="ButtonOpenFile_Click" Content="{StaticResource openString}" />
                 <TextBlock x:Name="fileName" Margin="0,20,0,0" VerticalAlignment="Stretch" Text="Путь и имя файла:"/>
                 <TextBox x:Name="fileTextBox" Margin="0,20,0,0" VerticalAlignment="Stretch" Text=""/>
                 <TextBlock x:Name="FlatCount" Text="{StaticResource FlatCountString}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,20,10,0"/>
@@ -42,16 +42,28 @@
 
             <!-- Центральная панель -->
             <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                <TextBlock  Text="Режим отображения:" VerticalAlignment="Stretch"/>
+                <TextBlock Text="Режим отображения:" VerticalAlignment="Stretch"/>
                 <RadioButton GroupName="RenderMode" Content="Textured" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
-                <RadioButton GroupName="RenderMode" Content="Smooth" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
-                <RadioButton GroupName="RenderMode" Content="Полигоны" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
-                <RadioButton GroupName="RenderMode" Content="Каркас" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Smooth" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Полигоны" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Каркас" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+
+                <!-- Light Position Controls -->
+                <TextBlock Text="Light Position:" Margin="0,20,0,0"/>
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <TextBox x:Name="lightX" Width="70" Text="-1000" Margin="0,0,5,0"/>
+                    <TextBox x:Name="lightY" Width="70" Text="100" Margin="0,0,5,0"/>
+                    <TextBox x:Name="lightZ" Width="70" Text="1000" Margin="0,0,5,0"/>
+                </StackPanel>
+                <CheckBox x:Name="useCameraPosition" Content="Use Camera Position" Margin="0,5,0,0"/>
+
+                <!-- Shadows Toggle -->
+                <CheckBox x:Name="enableShadows" Content="Enable Shadows" Margin="0,20,0,0"/>
             </StackPanel>
 
             <!-- Нижняя панель -->
             <StackPanel Grid.Row="2" Margin="0,0,0,20">
-                <TextBlock  Text="Режим взаимодействия:" VerticalAlignment="Center"/>
+                <TextBlock Text="Режим взаимодействия:" VerticalAlignment="Center"/>
                 <RadioButton GroupName="TransformMode" Content="Двигать" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
                 <RadioButton GroupName="TransformMode" Content="Поворачивать" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
             </StackPanel>

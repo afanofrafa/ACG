@@ -4,6 +4,7 @@ using GraphicsLib.Types;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,24 +13,26 @@ using System.Windows.Media.Imaging;
 
 namespace Lab1
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private readonly OpenFileDialog ofd;
-
         private static Obj? obj;
         private static Camera camera;
         private static Scene scene;
         private Renderer renderer;
         private Point oldPos;
 
+        // Shadow and light position tracking
+        private bool shadowsEnabled = false;
+        private bool shadowsRendered = false;
+        private Vector3 lastLightPosition;
+
         static MainWindow()
         {
             camera = new Camera();
             scene = new Scene(camera);
         }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -48,6 +51,17 @@ namespace Lab1
 
             renderer = new Renderer(scene);
 
+            lastLightPosition = new Vector3(-1000f, 100f, 1000f);
+            scene.LightPosition = lastLightPosition;
+
+            // Bind UI events
+            lightX.TextChanged += (s, e) => UpdateLightPosition();
+            lightY.TextChanged += (s, e) => UpdateLightPosition();
+            lightZ.TextChanged += (s, e) => UpdateLightPosition();
+            useCameraPosition.Checked += (s, e) => UpdateLightPosition();
+            useCameraPosition.Unchecked += (s, e) => UpdateLightPosition();
+            enableShadows.Checked += EnableShadows_Checked;
+            enableShadows.Unchecked += EnableShadows_Unchecked;
         }
 
         private void OnFileOpened(object? sender, CancelEventArgs e)
@@ -59,9 +73,56 @@ namespace Lab1
             else
                 obj = Parser.ParseGltfFile(ofd.FileName);
             obj.transformation.Reset();
+            shadowsRendered = false; // Reset shadows on new object load
             scene.Obj = obj;
             Draw();
+        }
 
+        private void UpdateLightPosition()
+        {
+            if (useCameraPosition.IsChecked == true)
+            {
+                scene.LightPosition = camera.Position;
+            }
+            else
+            {
+                try
+                {
+                    float x = float.Parse(lightX.Text);
+                    float y = float.Parse(lightY.Text);
+                    float z = float.Parse(lightZ.Text);
+                    scene.LightPosition = new Vector3(x, y, z);
+                }
+                catch
+                {
+                    // Revert to last valid position if parsing fails
+                    scene.LightPosition = lastLightPosition;
+                    lightX.Text = lastLightPosition.X.ToString();
+                    lightY.Text = lastLightPosition.Y.ToString();
+                    lightZ.Text = lastLightPosition.Z.ToString();
+                }
+            }
+
+            // Check if light position changed
+            if (scene.LightPosition != lastLightPosition && shadowsEnabled)
+            {
+                lastLightPosition = scene.LightPosition;
+                shadowsRendered = false; // Trigger shadow re-rendering
+            }
+            Draw();
+        }
+
+        private void EnableShadows_Checked(object sender, RoutedEventArgs e)
+        {
+            shadowsEnabled = true;
+            shadowsRendered = false; // Force shadow rendering
+            Draw();
+        }
+
+        private void EnableShadows_Unchecked(object sender, RoutedEventArgs e)
+        {
+            shadowsEnabled = false;
+            Draw();
         }
 
         private void Draw()
@@ -71,30 +132,35 @@ namespace Lab1
             try
             {
                 WriteableBitmap bitmap = new WriteableBitmap(
-                ((int)canvas.ActualWidth), ((int)canvas.ActualHeight), 96, 96, PixelFormats.Bgra32, null);
+                    ((int)canvas.ActualWidth), ((int)canvas.ActualHeight), 96, 96, PixelFormats.Bgra32, null);
                 renderer.Bitmap = bitmap;
                 int FaceCount = 0;
                 if (obj != null)
                 {
+                    if (shadowsEnabled && !shadowsRendered)
+                    {
+                        shadowsRendered = true;
+                    }
+
                     if (renderMode == "Полигоны")
                         FaceCount = renderer.RenderSolid();
                     else if (renderMode == "Smooth")
+                    {
+                        renderer.shadowsEnabled = shadowsEnabled;
                         FaceCount = renderer.Render<PhongShader, PhongShader.Vertex>();
+                    }
                     else if (renderMode == "Textured")
-                        //renderer.Render<TextureShader, TextureShader.Vertex>();
+                    {
+                        renderer.shadowsEnabled = shadowsEnabled;
                         FaceCount = renderer.Render<PhongTexturedShader, PhongTexturedShader.Vertex>();
+                    }
                     else
                         FaceCount = renderer.RenderCarcass();
                     FlatCount.Text = string.Join(' ', Resources["FlatCountString"].ToString(), FaceCount.ToString());
                 }
-                else
-                {
-
-                }
                 bitmap.Lock();
                 bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
                 bitmap.Unlock();
-               
                 canvas.Child = new Image { Source = bitmap };
                 renderer.Bitmap = null;
             }
@@ -124,7 +190,7 @@ namespace Lab1
                 float dy = (float)(newPos.Y - oldPos.Y);
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                 {
-                    // ....
+                    // Handle shift + mouse move if needed
                 }
                 else
                 {
@@ -181,70 +247,45 @@ namespace Lab1
                         break;
                 }
             }
-
         }
 
         private static float speed = 0.5f;
         private Dictionary<Key, Action> moveActions = new() {
-        {
-            Key.OemPlus, MakeLarger
-        },
-        {
-            Key.OemMinus, MakeSmaller
-        },
-        {
-            Key.W, () => {
+            { Key.OemPlus, MakeLarger },
+            { Key.OemMinus, MakeSmaller },
+            { Key.W, () => {
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                     obj!.transformation.Offset.Z += speed;
                 else
                     obj!.transformation.Offset.Y += speed;
-            }
-        },
-        {
-            Key.S, () => {
+            } },
+            { Key.S, () => {
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                     obj!.transformation.Offset.Z -= speed;
                 else
                     obj!.transformation.Offset.Y -= speed;
-            }
-        },
-        {
-            Key.D, () => { obj!.transformation.Offset.X += speed; }
-        },
-        {
-            Key.A, () => { obj!.transformation.Offset.X -= speed; }
-        }
+            } },
+            { Key.D, () => { obj!.transformation.Offset.X += speed; } },
+            { Key.A, () => { obj!.transformation.Offset.X -= speed; } }
         };
 
         private Dictionary<Key, Action> rotateActions = new() {
-        {
-            Key.OemPlus, MakeLarger
-        },
-        {
-            Key.OemMinus, MakeSmaller
-        },
-        {
-            Key.W, () => { obj!.transformation.AngleX += speed; }
-        },
-        {
-            Key.S, () => { obj!.transformation.AngleX -= speed; }
-        },
-        {
-            Key.A, () => {
+            { Key.OemPlus, MakeLarger },
+            { Key.OemMinus, MakeSmaller },
+            { Key.W, () => { obj!.transformation.AngleX += speed; } },
+            { Key.S, () => { obj!.transformation.AngleX -= speed; } },
+            { Key.A, () => {
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                     obj!.transformation.AngleY += speed;
                 else
                     obj!.transformation.AngleZ += speed;
-            }
-        },
-        {
-            Key.D, () => {
+            } },
+            { Key.D, () => {
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                     obj!.transformation.AngleY -= speed;
                 else
                     obj!.transformation.AngleZ -= speed;
-            }
-        }
+            } }
         };
 
         private static void MakeLarger()
