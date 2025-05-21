@@ -1,0 +1,60 @@
+﻿<Window x:Class="Lab1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:Lab1"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="1174" ThemeMode="System"
+        SizeChanged="Window_SizeChanged" WindowState="Maximized"
+        Keyboard.KeyDown="canvas_KeyDown">
+    <Window.Resources>
+        <system:String x:Key="openString">Открыть файл...</system:String>
+        <system:String x:Key="fileString">Путь и имя файла:</system:String>
+        <system:String x:Key="FlatCountString">Количество полигонов::</system:String>
+        <system:String x:Key="debugString">FPS:</system:String>
+        <system:String x:Key="mode_move">Двигать</system:String>
+        <system:String x:Key="mode_rotate">Поворачивать</system:String>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+        <Border x:Name="canvas" Grid.Column="0" Margin="10" Background="Black"
+                MouseDown="Window_MouseDown" MouseUp="Window_MouseUp" MouseMove="Window_MouseMove"
+                PreviewMouseWheel="Window_MouseWheel"/>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Верхняя панель -->
+            <StackPanel Grid.Row="0" Margin="0,20,0,0">
+                <Button Width="200" Height="30" HorizontalAlignment="Center"  Click="ButtonOpenFile_Click" Content="{StaticResource openString}" />
+                <TextBlock x:Name="fileName" Margin="0,20,0,0" VerticalAlignment="Stretch" Text="Путь и имя файла:"/>
+                <TextBox x:Name="fileTextBox" Margin="0,20,0,0" VerticalAlignment="Stretch" Text=""/>
+                <TextBlock x:Name="FlatCount" Text="{StaticResource FlatCountString}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,20,10,0"/>
+            </StackPanel>
+
+            <!-- Центральная панель -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                <TextBlock  Text="Режим отображения:" VerticalAlignment="Stretch"/>
+                <RadioButton GroupName="RenderMode" Content="Textured" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Smooth" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Полигоны" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="RenderMode" Content="Каркас" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+            </StackPanel>
+
+            <!-- Нижняя панель -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                <TextBlock  Text="Режим взаимодействия:" VerticalAlignment="Center"/>
+                <RadioButton GroupName="TransformMode" Content="Двигать" IsChecked="True" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                <RadioButton GroupName="TransformMode" Content="Поворачивать" Checked="RadioButton_Checked" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
