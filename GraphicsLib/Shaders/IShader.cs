@@ -13,6 +13,7 @@ namespace GraphicsLib.Shaders
     {
         public Scene Scene { get; set; }
         public bool ShadowsEnabled { get; set; }
+        public ShadowMap ShadowMap { get; set; }
         public uint PixelShader(Vertex input);
        
         public Vertex GetVertexWithWorldPositionFromTriangle(Obj obj, int triangleIndex, int vertexIndex);

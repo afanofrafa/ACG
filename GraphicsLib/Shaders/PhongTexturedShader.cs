@@ -13,7 +13,7 @@ namespace GraphicsLib.Shaders
         // Свойство для доступа к сцене, с установкой параметров
         public Scene Scene { get => scene; set => SetSceneParams(value); }
         public bool ShadowsEnabled { get => shadowsEnabled; set => SetShadowsEnabled(value); }
-
+        public ShadowMap ShadowMap { get; set; }
         private void SetShadowsEnabled(bool value)
         {
             shadowsEnabled = value;

@@ -26,7 +26,8 @@ namespace Lab1
         private bool shadowsEnabled = false;
         private bool shadowsRendered = false;
         private Vector3 lastLightPosition;
-
+        // Трекинг изменений трансформации объекта
+        private bool transformationChanged = false;
         static MainWindow()
         {
             camera = new Camera();
@@ -75,6 +76,7 @@ namespace Lab1
             obj.transformation.Reset();
             shadowsRendered = false; // Reset shadows on new object load
             scene.Obj = obj;
+            renderer.ClearTriangleCache();
             Draw();
         }
 
@@ -102,7 +104,14 @@ namespace Lab1
                     lightZ.Text = lastLightPosition.Z.ToString();
                 }
             }
-
+            // Обновляем матрицы света, если тени включены
+            if (shadowsEnabled)
+            {
+                // Направленный свет смотрит на начало координат (можно настроить)
+                scene.LightViewMatrix = Matrix4x4.CreateLookAt(scene.LightPosition, Vector3.Zero, Vector3.UnitY);
+                // Ортографическая проекция (размеры зависят от сцены, настройте под свои нужды)
+                scene.LightProjectionMatrix = Matrix4x4.CreateOrthographic(20f, 20f, 0.1f, 100f);
+            }
             // Check if light position changed
             if (scene.LightPosition != lastLightPosition && shadowsEnabled)
             {
@@ -141,7 +150,12 @@ namespace Lab1
                     {
                         shadowsRendered = true;
                     }
-
+                    // Очистка кэша, если трансформация изменилась
+                    if (transformationChanged)
+                    {
+                        renderer.ClearTriangleCache();
+                        transformationChanged = false;
+                    }
                     if (renderMode == "Полигоны")
                         FaceCount = renderer.RenderSolid();
                     else if (renderMode == "Smooth")
@@ -317,6 +331,7 @@ namespace Lab1
                         speed *= camera.Distance / 500;
                     }
                     action();
+                    transformationChanged = true; // Отмечаем изменение трансформации
                     Draw();
                 }
             }

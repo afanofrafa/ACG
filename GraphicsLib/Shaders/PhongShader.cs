@@ -11,7 +11,7 @@ namespace GraphicsLib.Shaders
     {
         public Scene Scene { get => scene; set => SetSceneParams(value); }
         public bool ShadowsEnabled { get => shadowsEnabled; set => SetShadowsEnabled(value); }
-
+        public ShadowMap ShadowMap { get; set; }
         private void SetShadowsEnabled(bool value)
         {
             shadowsEnabled = value;
@@ -56,46 +56,7 @@ namespace GraphicsLib.Shaders
             Scene = scene;
         }
         // Add shadow-related methods from PhongTexturedShader
-        private bool IntersectTriangle(Vector3 origin, Vector3 direction, StaticTriangle triangle, out float t)
-        {
-            t = 0f;
-            const float EPSILON = 0.000001f;
-            Vector3 v0 = triangle.position0;
-            Vector3 v1 = triangle.position1;
-            Vector3 v2 = triangle.position2;
-            Vector3 edge1 = v1 - v0;
-            Vector3 edge2 = v2 - v0;
-            Vector3 h = Vector3.Cross(direction, edge2);
-            float a = Vector3.Dot(edge1, h);
-            if (a > -EPSILON && a < EPSILON)
-                return false;
-            float f = 1.0f / a;
-            Vector3 s = origin - v0;
-            float u = f * Vector3.Dot(s, h);
-            if (u < 0.0f || u > 1.0f)
-                return false;
-            Vector3 q = Vector3.Cross(s, edge1);
-            float v = f * Vector3.Dot(direction, q);
-            if (v < 0.0f || u + v > 1.0f)
-                return false;
-            t = f * Vector3.Dot(edge2, q);
-            return t > EPSILON;
-        }
 
-        private bool IsInShadow(Vector3 point, Vector3 lightPos, Obj obj)
-        {
-            if (!shadowsEnabled) return false; // No shadows if not enabled
-            float distanceToLight = Vector3.Distance(point, lightPos);
-            for (int i = 0; i < obj.triangles.Length; i++)
-            {
-                if (IntersectTriangle(point, Vector3.Normalize(lightPos - point), obj.triangles[i], out float t))
-                {
-                    if (t < distanceToLight)
-                        return true;
-                }
-            }
-            return false;
-        }
         public struct Vertex : IVertex<Vertex>
         {
             public Vector4 Position { get; set; }
@@ -165,11 +126,10 @@ namespace GraphicsLib.Shaders
             Vector3 lightDir = Vector3.Normalize(lightPosition - input.WorldPosition);
             Vector3 reflectDir = Vector3.Reflect(-lightDir, normal);
 
-            bool inShadow = IsInShadow(input.WorldPosition, lightPosition, scene.Obj);
-            float diffuseFactor = inShadow ? 0 : Math.Max(Vector3.Dot(normal, lightDir), 0);
+            float diffuseFactor = Math.Max(Vector3.Dot(normal, lightDir), 0);
             Vector3 diffuse = diffuseColor * diffuseFactor * lightIntensity;
 
-            float specularFactor = inShadow ? 0 : MathF.Pow(Math.Max(Vector3.Dot(reflectDir, camDir), 0), specularPower);
+            float specularFactor = MathF.Pow(Math.Max(Vector3.Dot(reflectDir, camDir), 0), specularPower);
             Vector3 specular = lightColor * specularFactor * lightIntensity;
 
             Vector3 finalColor = Vector3.Clamp(ambient + diffuse + specular, Vector3.Zero, new Vector3(1, 1, 1));

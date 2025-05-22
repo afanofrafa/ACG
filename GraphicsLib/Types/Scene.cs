@@ -24,5 +24,7 @@ namespace GraphicsLib.Types
         public Vector3 LightColor { get; set; } = new(1f, 1f, 1f);
         public float LightIntensity { get; set; } = 0.9f;
         public Vector3 LightPosition { get; set; } = new(-1000f, 100f, 1000f);
+        public Matrix4x4 LightViewMatrix { get; set; } // Матрица вида света
+        public Matrix4x4 LightProjectionMatrix { get; set; } // Матрица проекции света
     }
 }
